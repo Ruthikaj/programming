@@ -88,5 +88,37 @@ CREATE INDEX idx_student ON Students(Name);
 🔹 **Types:**  
 - **Clustered Index** (Modifies physical order of rows).  
 - **Non-Clustered Index** (Creates a separate structure for faster searches).  
+Here are the SQL queries for your questions:
 
-Would you like me to explain any topic further? 🚀
+### **1. Query to Find the Maximum Salary in an Employee Table**
+```sql
+SELECT MAX(Salary) AS Highest_Salary FROM Employee;
+```
+🔹 **Explanation:**  
+- `MAX(Salary)`: Finds the highest salary in the `Employee` table.  
+- `AS Highest_Salary`: Gives an alias to the result.
+
+---
+
+### **2. Query to Get the Current Date**
+```sql
+SELECT CURRENT_DATE;
+```
+OR (in MySQL & SQL Server):
+```sql
+SELECT GETDATE();
+```
+🔹 **Explanation:**  
+- `CURRENT_DATE`: Returns today’s date.  
+- `GETDATE()`: Returns **current date and time** (SQL Server, MySQL).
+
+---
+
+### **3. Query to Select Employees Whose First Name Starts with ‘J’**
+```sql
+SELECT * FROM Employee WHERE First_Name LIKE 'J%';
+```
+🔹 **Explanation:**  
+- `LIKE 'J%'`: Matches names that **start with ‘J’** (`%` is a wildcard for any characters after ‘J’).
+
+Would you like more SQL queries? 😊
