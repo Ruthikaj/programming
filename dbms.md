@@ -121,4 +121,93 @@ SELECT * FROM Employee WHERE First_Name LIKE 'J%';
 🔹 **Explanation:**  
 - `LIKE 'J%'`: Matches names that **start with ‘J’** (`%` is a wildcard for any characters after ‘J’).
 
-Would you like more SQL queries? 😊
+### **Database Schema for a Photo-Sharing App**
+A **simplified relational database schema** for storing users and their uploaded photos:  
+
+#### **Tables:**
+1. **Users** – Stores user information  
+2. **Photos** – Stores photo details  
+3. **Likes** – Tracks which user liked which photo  
+4. **Comments** – Stores comments on photos  
+
+#### **Schema Design:**
+```sql
+CREATE TABLE Users (
+    user_id INT PRIMARY KEY AUTO_INCREMENT,
+    username VARCHAR(255) UNIQUE NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE Photos (
+    photo_id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    photo_url VARCHAR(255) NOT NULL,
+    caption TEXT,
+    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE
+);
+
+CREATE TABLE Likes (
+    like_id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    photo_id INT NOT NULL,
+    liked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (photo_id) REFERENCES Photos(photo_id) ON DELETE CASCADE
+);
+
+CREATE TABLE Comments (
+    comment_id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    photo_id INT NOT NULL,
+    comment_text TEXT NOT NULL,
+    commented_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (photo_id) REFERENCES Photos(photo_id) ON DELETE CASCADE
+);
+```
+
+---
+
+## **Query to Fetch Recent Photos of a Given User**
+To fetch the most recent **photos uploaded by a specific user**, sorted by date:
+```sql
+SELECT photo_id, photo_url, caption, uploaded_at 
+FROM Photos 
+WHERE user_id = ? 
+ORDER BY uploaded_at DESC 
+LIMIT 10;
+```
+🔹 **Explanation:**  
+- `WHERE user_id = ?` → Filters photos of the given user  
+- `ORDER BY uploaded_at DESC` → Retrieves most recent photos first  
+- `LIMIT 10` → Returns only the **10 most recent photos**  
+
+---
+
+## **Query to Fetch All Photos for a User Feed**
+To fetch photos for a user feed (showing recent photos from all users the given user follows):
+```sql
+SELECT Photos.photo_id, Photos.user_id, Users.username, Photos.photo_url, Photos.caption, Photos.uploaded_at 
+FROM Photos
+JOIN Users ON Photos.user_id = Users.user_id
+WHERE Photos.user_id IN (
+    SELECT following_id FROM Followers WHERE follower_id = ? 
+)
+ORDER BY Photos.uploaded_at DESC
+LIMIT 20;
+```
+🔹 **Explanation:**  
+- The **`Followers`** table (not shown in schema) tracks which users a person follows.  
+- **Subquery (`SELECT following_id FROM Followers WHERE follower_id = ?`)** gets the users the given user follows.  
+- `ORDER BY uploaded_at DESC` → Fetches recent posts first.  
+- `LIMIT 20` → Returns **latest 20 photos**.  
+
+---
+
+### **Bonus: Optimize Query with an Index**
+To speed up fetching recent photos, add an **index** on `uploaded_at`:
+```sql
+CREATE INDEX idx_uploaded_at ON Photos(uploaded_at DESC);
+```
