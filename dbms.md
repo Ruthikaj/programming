@@ -728,3 +728,244 @@ ACID ensures **reliable transactions** in SQL databases.
 ✅ Essential for **banking, e-commerce, and financial applications** where **data loss is unacceptable**.  
 
 🚀 **Durability guarantees that committed transactions remain permanent, ensuring database reliability and trust.**
+
+
+### **SQL Query to Get the Highest Salary in Each Department**  
+
+```sql
+SELECT Department, MAX(Salary) AS Highest_Salary
+FROM Employee
+GROUP BY Department;
+```
+
+### **Explanation:**  
+✔ `GROUP BY Department` → Groups employees based on their department.  
+✔ `MAX(Salary)` → Fetches the highest salary for each department.  
+
+### **Example Data: Employee Table**  
+
+| Employee_ID | Name  | Department | Salary  |
+|------------|-------|------------|---------|
+| 101        | Alice  | HR         | 50000   |
+| 102        | Bob    | IT         | 70000   |
+| 103        | Charlie | HR         | 60000   |
+| 104        | David  | IT         | 90000   |
+| 105        | Eve    | Finance    | 75000   |
+
+### **Output of the Query:**  
+
+| Department | Highest_Salary |
+|------------|---------------|
+| HR         | 60000         |
+| IT         | 90000         |
+| Finance    | 75000         |
+
+This ensures each department's **highest salary** is retrieved efficiently. 🚀
+
+### **Insertion, Deletion, and Updating Anomalies in DBMS**  
+
+When a database is **not properly normalized**, it may suffer from **data redundancy and inconsistency issues**. These issues are classified into **Insertion, Deletion, and Update Anomalies**.
+
+Let's understand these **anomalies** using a real-life **University Database** scenario.  
+
+---
+
+## **1. Insertion Anomaly (Adding Data Issues)**
+📌 **Problem:** Inserting data becomes difficult because some attributes depend on other attributes.  
+
+**💡 Scenario:**  
+A university maintains a table for **Students and Courses** where students enroll in different courses.
+
+| Student_ID | Student_Name | Course_ID | Course_Name | Instructor |
+|------------|--------------|------------|-------------|------------|
+| 101        | Alice        | CSE101     | DBMS        | Dr. Smith  |
+| 102        | Bob          | CSE102     | OS          | Dr. Brown  |
+
+### **Issue:**  
+- If a new course is introduced (e.g., **CSE103 - Computer Networks**) but **no student has enrolled yet**, we **CANNOT insert the course** because we must also insert a **Student_ID**.
+- This is an **Insertion Anomaly** because inserting a course **depends on having students enrolled in it**.
+
+✅ **Solution:**  
+- **Normalize the table** by creating a separate **Courses Table** and **Students Table**.
+
+---
+
+## **2. Deletion Anomaly (Losing Important Data)**
+📌 **Problem:** Deleting one piece of data **accidentally deletes other critical data**.  
+
+**💡 Scenario:**  
+Let's say a student **drops out** or cancels enrollment.
+
+| Student_ID | Student_Name | Course_ID | Course_Name | Instructor |
+|------------|--------------|------------|-------------|------------|
+| 101        | Alice        | CSE101     | DBMS        | Dr. Smith  |
+| 102        | Bob          | CSE102     | OS          | Dr. Brown  |
+
+### **Issue:**  
+- If **Bob drops out**, and we delete his row, we **also lose the course details (CSE102 - OS, Dr. Brown)**.
+- This is a **Deletion Anomaly** because **course information should not depend on student enrollment**.
+
+✅ **Solution:**  
+- Store **Courses separately** so that even if a student leaves, course data **remains intact**.
+
+---
+
+## **3. Update Anomaly (Inconsistencies in Updating Data)**
+📌 **Problem:** Updating a piece of data **leads to inconsistencies** if it appears in multiple places.  
+
+**💡 Scenario:**  
+Suppose the **Instructor for DBMS (Dr. Smith) changes**.
+
+| Student_ID | Student_Name | Course_ID | Course_Name | Instructor |
+|------------|--------------|------------|-------------|------------|
+| 101        | Alice        | CSE101     | DBMS        | Dr. Smith  |
+| 102        | Bob          | CSE102     | OS          | Dr. Brown  |
+| 103        | Charlie      | CSE101     | DBMS        | Dr. Smith  |
+
+### **Issue:**  
+- We must update **every row** where `DBMS` is taught by `Dr. Smith`.
+- If we **miss even one row**, there will be **data inconsistency** (some students may still have "Dr. Smith" instead of the new instructor).
+- This is an **Update Anomaly** because **updating one value should not require updating multiple rows**.
+
+✅ **Solution:**  
+- Store **Instructor details separately** in an **Instructor Table** and link it via `Instructor_ID`.
+
+---
+
+## **How to Prevent These Anomalies?**
+The **best way** to prevent these anomalies is by **normalizing the database** using **Normalization Forms (1NF, 2NF, 3NF, BCNF, etc.)**.
+
+### **🔹 Recommended Normalized Tables**
+1. **Students Table**
+   ```
+   | Student_ID | Student_Name |
+   |------------|--------------|
+   | 101        | Alice        |
+   | 102        | Bob          |
+   | 103        | Charlie      |
+   ```
+
+2. **Courses Table**
+   ```
+   | Course_ID | Course_Name |
+   |-----------|-------------|
+   | CSE101    | DBMS        |
+   | CSE102    | OS          |
+   | CSE103    | CN          |
+   ```
+
+3. **Instructors Table**
+   ```
+   | Instructor_ID | Instructor_Name |
+   |--------------|-----------------|
+   | 1            | Dr. Smith       |
+   | 2            | Dr. Brown       |
+   ```
+
+4. **Enrollments Table (Bridge Table)**
+   ```
+   | Student_ID | Course_ID | Instructor_ID |
+   |------------|-----------|---------------|
+   | 101        | CSE101    | 1             |
+   | 102        | CSE102    | 2             |
+   ```
+
+✅ **Now:**
+- **New courses** can be added without requiring students (fixing Insertion Anomalies).
+- **Deleting a student** won't remove course details (fixing Deletion Anomalies).
+- **Updating an instructor** is done in one place (fixing Update Anomalies).
+
+---
+
+### **📌 Summary Table**
+| **Anomaly Type**  | **Problem** | **Example Scenario** | **Solution** |
+|------------------|------------|----------------------|-------------|
+| **Insertion Anomaly** | Unable to add data without unrelated fields | Can't add a new course unless a student enrolls | Separate Courses Table |
+| **Deletion Anomaly** | Deleting one entry removes other necessary data | Removing a student deletes course details | Separate Students & Courses |
+| **Update Anomaly** | Data inconsistency when updating | Updating an instructor requires updating multiple rows | Store Instructor details separately |
+
+---
+
+### **🔥 Conclusion**
+- **Always normalize databases** to avoid **data redundancy, inconsistency, and anomalies**.
+- **Use separate tables** for related data and connect them using **foreign keys**.
+- **Apply normalization techniques** to avoid **complex updates and unnecessary dependencies**.
+
+- ### **1. SQL Query to Evaluate A - B Using Joins**  
+To evaluate **A - B** (i.e., rows in table `A` that are not present in table `B`), we use the **LEFT JOIN** and filter out NULL values from `B`.
+
+#### **Query**
+```sql
+SELECT A.*
+FROM A
+LEFT JOIN B ON A.id = B.id
+WHERE B.id IS NULL;
+```
+#### **Explanation:**
+- Performs a **LEFT JOIN** on `A` and `B` based on `id`.
+- Filters rows where `B.id IS NULL`, meaning the `id` from `A` has no match in `B`.
+
+---
+
+### **2. Difference Between TRUNCATE and DELETE**
+| Feature          | TRUNCATE                         | DELETE                          |
+|-----------------|--------------------------------|--------------------------------|
+| **Definition**  | Removes **all rows** from a table **without logging individual row deletions**. | Removes **specific rows** based on a **WHERE condition**. |
+| **Condition**   | Cannot have a **WHERE clause**. | Can use **WHERE** to delete selective rows. |
+| **Logging**     | Minimal logging, **faster**. | Logs each row deletion, **slower** for large data. |
+| **Rollback**    | **Cannot be rolled back** (unless within a transaction). | **Can be rolled back**. |
+| **Resets Identity** | **Yes**, resets auto-increment counter. | **No**, identity value is retained. |
+| **Trigger Activation** | **No triggers** are fired. | Triggers are executed. |
+| **Performance** | **Faster** for large data. | **Slower**, especially for large datasets. |
+
+✅ **Use `TRUNCATE`** when you want to remove **all rows quickly** without logging.  
+✅ **Use `DELETE`** when you need **conditional row deletion** and rollback capabilities.
+
+---
+
+### **3. DML vs DDL Commands in SQL**
+| **Category**  | **DML (Data Manipulation Language)** | **DDL (Data Definition Language)** |
+|--------------|----------------------------------|----------------------------------|
+| **Purpose** | Modifies **data** in the database | Defines/modifies **structure** of the database |
+| **Commands** | `INSERT`, `UPDATE`, `DELETE`, `SELECT` | `CREATE`, `ALTER`, `DROP`, `TRUNCATE` |
+| **Effect** | Affects **rows (data)** | Affects **tables (schema)** |
+| **Rollback** | **Yes**, can be rolled back | **No**, cannot be rolled back in most cases |
+| **Logging** | Fully logged | Partially logged |
+
+✅ **DML Example:**  
+```sql
+INSERT INTO Employees (Emp_id, Name, Salary) VALUES (101, 'Alice', 50000);
+```
+
+✅ **DDL Example:**  
+```sql
+CREATE TABLE Employees (
+    Emp_id INT PRIMARY KEY,
+    Name VARCHAR(50),
+    Salary INT
+);
+```
+
+---
+
+### **4. SQL Query to Find Count of Employees Having `grade = '3'` and Their Second Highest Salary**
+#### **Query**
+```sql
+WITH RankedSalaries AS (
+    SELECT Emp_id, grade, salary, 
+           DENSE_RANK() OVER (ORDER BY salary DESC) AS rank
+    FROM Employee
+    WHERE grade = '3'
+)
+SELECT COUNT(*) AS employee_count, MAX(salary) AS second_highest_salary
+FROM RankedSalaries
+WHERE rank = 2;
+```
+#### **Explanation:**
+1. **`DENSE_RANK()`** assigns ranks to salaries in descending order.
+2. Filters employees where **`grade = '3'`**.
+3. Selects:
+   - **`COUNT(*)`** → Total employees with `grade = '3'`.
+   - **`MAX(salary)`** where `rank = 2` → Gets the **second highest salary**.
+
+✅ This ensures correct ranking even when multiple employees have the same salary.
