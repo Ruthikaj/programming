@@ -1335,3 +1335,146 @@ DELETE FROM CTE WHERE RowNum > 1;
 
 ✅ **Explanation**: The `CTE` (Common Table Expression) ranks the rows and deletes any row with a rank greater than 1, effectively removing duplicates.
 
+### **1. Deleting Duplicate Entries from a Table**
+When dealing with duplicate records in a SQL table, the goal is to keep only one occurrence and remove the rest.
+
+#### **Approach 1: Using `ROW_NUMBER()` with CTE**
+```sql
+WITH CTE AS (
+    SELECT *, 
+           ROW_NUMBER() OVER (PARTITION BY column1, column2 ORDER BY id) AS row_num
+    FROM table_name
+)
+DELETE FROM table_name 
+WHERE id IN (SELECT id FROM CTE WHERE row_num > 1);
+```
+✅ **Explanation**:  
+- `ROW_NUMBER()` assigns a unique number to each duplicate row.
+- `PARTITION BY column1, column2` groups identical rows.
+- `row_num > 1` identifies duplicates for deletion.
+
+#### **Approach 2: Using `DISTINCT` and Temporary Table**
+```sql
+CREATE TABLE temp_table AS
+SELECT DISTINCT * FROM table_name;
+
+DROP TABLE table_name;
+
+ALTER TABLE temp_table RENAME TO table_name;
+```
+✅ **Explanation**:  
+- Creates a new table with distinct records.
+- Drops the old table and renames the new one.
+
+---
+
+### **2. Transaction Concurrency in SQL**
+Transaction concurrency ensures multiple transactions can execute simultaneously without conflicts.
+
+🔹 **Concurrency Issues:**
+1. **Dirty Read** – One transaction reads uncommitted changes from another.
+2. **Lost Update** – Two transactions update the same row simultaneously.
+3. **Non-Repeatable Read** – A transaction gets different values on repeated reads.
+4. **Phantom Read** – A transaction sees new records on re-execution.
+
+🔹 **Concurrency Control Techniques:**
+- **Locking Mechanisms** (Shared & Exclusive Locks)
+- **Timestamp Ordering**
+- **Optimistic Concurrency Control** (Validation before commit)
+- **Multiversion Concurrency Control (MVCC)** – Used in PostgreSQL & MySQL
+
+Example using Pessimistic Locking:
+```sql
+BEGIN TRANSACTION;
+SELECT * FROM Accounts WHERE AccountID = 101 FOR UPDATE;
+UPDATE Accounts SET Balance = Balance - 100 WHERE AccountID = 101;
+COMMIT;
+```
+✅ **Explanation**:  
+- `FOR UPDATE` locks the row until the transaction completes.
+
+---
+
+### **3. Hashing, Indexing, and Normalization**
+#### **Hashing**
+- Converts input data into a fixed-size key.
+- Used in **password storage**, **hash joins**, and **cache lookups**.
+
+#### **Indexing**
+- Improves search performance in databases.
+- Types:
+  - **Clustered Index** (Data is physically sorted)
+  - **Non-clustered Index** (Stores references to data)
+
+Example:
+```sql
+CREATE INDEX idx_employee_salary ON Employees(Salary);
+```
+
+#### **Normalization**
+- Reduces redundancy and improves data integrity.
+- **1NF:** Atomic columns.
+- **2NF:** No partial dependency.
+- **3NF:** No transitive dependency.
+- **BCNF:** Stronger form of 3NF.
+
+---
+
+### **4. Handling "Memory Full" in a Database**
+#### **Short-Term Fixes**
+- **Normalization**: Remove redundant data.
+- **Check for Memory Leaks**: Identify inefficient queries.
+- **Optimize Indexes**: Reduce unused indexes.
+- **Partitioning**: Split large tables into smaller ones.
+
+#### **Long-Term Fixes**
+- **Move to Cloud Storage**: AWS, Azure, Google Cloud.
+- **Sharding**: Distribute data across multiple databases.
+- **Load Balancing**: Distribute queries across servers.
+
+---
+
+### **5. Fraudulent Debit Transaction Scenario**
+#### **Possible Causes**
+1. **Unauthorized Access**  
+   - If a user’s PIN was used, it’s a **security issue** (not a software bug).  
+
+2. **Software Bug in Transaction Processing**  
+   - If multiple fraudulent transactions occur within seconds:
+     - **Log Analysis**: Identify suspicious transactions.
+     - **Fraud Detection Algorithm**: Flag unusual spending patterns.
+     - **Modular Testing & Exception Handling**: Ensure robustness.
+
+#### **Technical Fixes**
+- Implement **Two-Factor Authentication (2FA)** for transactions.
+- Monitor **transaction frequency** and **flag anomalies**.
+- Use **Rate Limiting** to prevent excessive withdrawals.
+
+---
+
+### **6. SQL Query: Fetch the Third-Highest Marks**
+```sql
+SELECT DISTINCT marks 
+FROM students 
+ORDER BY marks DESC 
+LIMIT 1 OFFSET 2;
+```
+✅ **Explanation**:  
+- `ORDER BY marks DESC` sorts scores in descending order.
+- `LIMIT 1 OFFSET 2` skips the top 2 and fetches the 3rd highest.
+
+---
+
+### **7. SQL Query: Second-Highest Salary for Employees with Grade 3**
+```sql
+SELECT MAX(salary) AS SecondHighestSalary
+FROM Employees 
+WHERE grade = '3' 
+AND salary < (SELECT MAX(salary) FROM Employees WHERE grade = '3');
+```
+✅ **Explanation**:
+- The subquery finds the highest salary.
+- The outer query finds the next highest.
+
+---
+
