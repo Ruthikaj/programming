@@ -1176,4 +1176,162 @@ INNER JOIN Departments d ON e.Dept_ID = d.Dept_ID;
 - **SQL Joins** improve query performance compared to `WHERE` filters.
 - **Rank Queries** (`LIMIT`, `OFFSET`, `DENSE_RANK()`) help in fetching top scores.
 
-Let me know if you need further refinements! 🚀
+### **1. ACID Properties in Database**  
+**ACID** is an acronym representing four key properties of database transactions to ensure reliable processing:
+- **A - Atomicity**: A transaction is **all or nothing**. It either completes fully or does not happen at all.
+- **C - Consistency**: A transaction must bring the database from one valid state to another, maintaining all rules and constraints.
+- **I - Isolation**: Multiple transactions can run concurrently without affecting each other, preserving intermediate states.
+- **D - Durability**: Once a transaction is committed, its result is permanent, even in case of system failure.
+
+---
+
+### **2. Normalization in Databases**  
+**Normalization** is the process of structuring a database to reduce redundancy and improve data integrity. It divides larger tables into smaller, related tables and enforces relationships using keys.
+  
+#### **Types of Normalization**  
+1. **1NF (First Normal Form)**: Ensures **atomicity** (no multi-valued attributes) and no repeating groups.
+2. **2NF (Second Normal Form)**: Ensures no **partial dependency**, where non-key attributes are dependent on part of a composite key.
+3. **3NF (Third Normal Form)**: Ensures no **transitive dependency**, where non-key attributes depend on other non-key attributes.
+4. **BCNF (Boyce-Codd Normal Form)**: A stricter form of 3NF, ensuring all functional dependencies have superkeys as determinants.
+  
+---
+
+### **3. Difference Between Recovery and Restoration in a Database**  
+- **Recovery**: Refers to the process of restoring the database to a **consistent state** after a failure. This could involve rolling back incomplete transactions or replaying committed ones from logs.
+- **Restoration**: Involves restoring the entire database from a previous **backup**. This occurs after severe failure (e.g., hardware crash), and after restoration, the database needs to be recovered to the current state using logs.
+
+---
+
+### **4. SQL Queries: `ORDER BY` and `GROUP BY`**  
+
+- **`ORDER BY`**: Sorts the result set based on one or more columns.
+```sql
+SELECT Name, Salary 
+FROM Employees 
+ORDER BY Salary DESC;
+```
+
+- **`GROUP BY`**: Groups rows that share a value in one or more columns.
+```sql
+SELECT Department, COUNT(*) 
+FROM Employees 
+GROUP BY Department;
+```
+
+---
+
+### **5. Data Storage in a Database**  
+Data is typically stored in databases in **tables** composed of **rows (records)** and **columns (fields)**. These tables store relational data where rows represent individual entries, and columns represent attributes.
+
+---
+
+### **6. DDL, DML, DCL, and TCL**  
+1. **DDL (Data Definition Language)**: Commands that define and modify database structure.
+   - **CREATE**: To create a new table or database.
+   - **ALTER**: To modify an existing database object.
+   - **DROP**: To delete an object like a table.
+   - **TRUNCATE**: To remove all rows from a table without logging individual row deletions.
+
+2. **DML (Data Manipulation Language)**: Commands for data manipulation.
+   - **SELECT**: To retrieve data.
+   - **INSERT**: To add data.
+   - **UPDATE**: To modify data.
+   - **DELETE**: To remove data.
+
+3. **DCL (Data Control Language)**: Commands to manage permissions.
+   - **GRANT**: To give access to users.
+   - **REVOKE**: To remove access.
+
+4. **TCL (Transaction Control Language)**: Commands to manage transactions.
+   - **COMMIT**: To save the work.
+   - **ROLLBACK**: To undo the work.
+   - **SAVEPOINT**: To set a point within a transaction to rollback to.
+
+---
+
+### **7. Concurrency Control & Serializability**  
+Concurrency control ensures that multiple transactions can run simultaneously without causing data inconsistency.  
+
+- **Serializability**: The concept that the result of concurrently executing transactions should be the same as if they were executed sequentially.
+
+Concurrency is handled using techniques like:
+- **Locks** (Shared and Exclusive locks).
+- **Timestamps** (Oldest transactions get priority).
+- **Optimistic Concurrency Control** (Validation before commit).
+
+---
+
+### **8. SQL Keys Explanation with Student Database Example**
+
+- **Primary Key**: Uniquely identifies each record.  
+  ```sql
+  CREATE TABLE Students (
+      Student_ID INT PRIMARY KEY,
+      Name VARCHAR(50)
+  );
+  ```
+
+- **Foreign Key**: Establishes a relationship between two tables.
+  ```sql
+  CREATE TABLE Marks (
+      Student_ID INT,
+      Subject VARCHAR(50),
+      FOREIGN KEY (Student_ID) REFERENCES Students(Student_ID)
+  );
+  ```
+
+- **Candidate Key**: Any column(s) that can uniquely identify a record.
+- **Composite Key**: A combination of two or more columns to uniquely identify a record.
+  
+- **Unique Key**: Similar to primary key, but can contain a NULL value.
+  
+- **Super Key**: Any set of attributes that can uniquely identify a tuple.
+
+---
+
+### **9. SQL Query for Employee Table**  
+#### **Table: Employees**  
+| Emp_id | Grade | Salary |
+|--------|-------|--------|
+| 1      | 3     | 6000   |
+| 2      | 3     | 7500   |
+| 3      | 3     | 8500   |
+| 4      | 2     | 5000   |
+
+#### **Query to Find Count of Employees with Grade '3' and Second Highest Salary**
+```sql
+SELECT COUNT(*) AS Count, MAX(Salary) AS Second_Highest_Salary
+FROM Employees
+WHERE Grade = 3
+AND Salary < (SELECT MAX(Salary) FROM Employees WHERE Grade = 3);
+```
+
+---
+
+### **10. ER Diagram for Attendance Management System**  
+An ER Diagram for an **Attendance Management System** could include entities such as **Students**, **Classes**, **Attendance Records**, and **Courses**. Key attributes might be:
+
+- **Students (Student_ID, Name, Email)**.
+- **Courses (Course_ID, Course_Name)**.
+- **Classes (Class_ID, Course_ID, Teacher_ID)**.
+- **Attendance (Attendance_ID, Class_ID, Student_ID, Status)**.
+
+The relationships include:
+- **Students** attend **Classes**.
+- **Classes** are conducted for **Courses**.
+- **Attendance Records** track student participation in each class.
+
+---
+
+### **11. SQL Query to Delete Duplicate Entries from a Table**  
+Assume the table **Employees** with duplicate entries based on **Emp_id**:
+```sql
+WITH CTE AS (
+    SELECT Emp_id, ROW_NUMBER() OVER (PARTITION BY Emp_id ORDER BY Emp_id) AS RowNum
+    FROM Employees
+)
+DELETE FROM CTE WHERE RowNum > 1;
+```
+
+✅ **Explanation**: The `CTE` (Common Table Expression) ranks the rows and deletes any row with a rank greater than 1, effectively removing duplicates.
+
