@@ -969,3 +969,211 @@ WHERE rank = 2;
    - **`MAX(salary)`** where `rank = 2` → Gets the **second highest salary**.
 
 ✅ This ensures correct ranking even when multiple employees have the same salary.
+
+### **1. Hypothetical Situation: Joint Account Withdrawals & Concurrency Control**  
+When **two users try to withdraw from a joint account at the same time from different ATMs**, **concurrency control mechanisms** in databases handle this scenario.
+
+✅ **Possible Issues:**  
+- **Race Condition**: Both transactions might read the same balance before updating, leading to over-withdrawal.  
+- **Deadlock**: If both transactions hold partial locks, they may block each other indefinitely.  
+
+✅ **How Concurrency Control Solves This:**  
+- **Locks (Pessimistic Concurrency Control)**: A **write lock** ensures one transaction updates the balance before the other.  
+- **Optimistic Concurrency Control**: Transactions proceed and **validate** balance before committing.  
+- **ACID Properties (Isolation Level: Serializable or Repeatable Read)**: Prevents inconsistent reads and updates.
+
+---
+
+### **2. Normalization Concepts with Example Tables**  
+
+#### **Unnormalized Table (UNF)**
+| Student_ID | Name  | Subject  | Marks | Department |  
+|-----------|------|---------|------|------------|  
+| 101       | John | Math    | 85   | Science    |  
+| 101       | John | Physics | 78   | Science    |  
+| 102       | Alice | Math    | 90   | Science    |  
+| 102       | Alice | English | 82   | Arts       |  
+
+#### **First Normal Form (1NF)**
+- No **repeating groups**; each column has atomic values.
+```sql
+CREATE TABLE Students (
+    Student_ID INT PRIMARY KEY,
+    Name VARCHAR(50),
+    Department VARCHAR(50)
+);
+CREATE TABLE Marks (
+    Student_ID INT,
+    Subject VARCHAR(50),
+    Marks INT,
+    FOREIGN KEY (Student_ID) REFERENCES Students(Student_ID)
+);
+```
+
+#### **Second Normal Form (2NF)**
+- No **partial dependency** on a composite key.
+- If (Student_ID, Subject) is the **composite key**, remove non-key dependency **Department**.
+```sql
+CREATE TABLE Departments (
+    Department_ID INT PRIMARY KEY,
+    Department_Name VARCHAR(50)
+);
+CREATE TABLE Students (
+    Student_ID INT PRIMARY KEY,
+    Name VARCHAR(50),
+    Department_ID INT,
+    FOREIGN KEY (Department_ID) REFERENCES Departments(Department_ID)
+);
+```
+
+#### **Third Normal Form (3NF)**
+- Remove **transitive dependency** (e.g., Student_ID → Department_ID → Department_Name).
+```sql
+CREATE TABLE Students (
+    Student_ID INT PRIMARY KEY,
+    Name VARCHAR(50)
+);
+CREATE TABLE Enrollments (
+    Student_ID INT,
+    Department_ID INT,
+    PRIMARY KEY (Student_ID, Department_ID),
+    FOREIGN KEY (Student_ID) REFERENCES Students(Student_ID),
+    FOREIGN KEY (Department_ID) REFERENCES Departments(Department_ID)
+);
+```
+✅ **Now, queries on these tables can be optimized.**
+
+---
+
+### **3. SQL Query to Fetch Top 3 Scores from Student Table**  
+#### **Table: Students**
+| Student_ID | Name  | Score |
+|-----------|------|------|
+| 101       | John | 95   |
+| 102       | Alice | 89   |
+| 103       | Bob  | 92   |
+| 104       | Charlie | 85   |
+| 105       | Dave  | 97   |
+
+#### **Query Using `LIMIT` (MySQL, PostgreSQL)**
+```sql
+SELECT Name, Score 
+FROM Students 
+ORDER BY Score DESC 
+LIMIT 3;
+```
+
+#### **Query Using `TOP` (SQL Server)**
+```sql
+SELECT TOP 3 Name, Score 
+FROM Students 
+ORDER BY Score DESC;
+```
+
+#### **Query Using `DENSE_RANK()` (Works for All SQL)**
+```sql
+SELECT Name, Score 
+FROM (
+    SELECT Name, Score, DENSE_RANK() OVER (ORDER BY Score DESC) AS rnk
+    FROM Students
+) Ranked
+WHERE rnk <= 3;
+```
+
+✅ **`DENSE_RANK()` ensures ties are handled correctly.**  
+
+---
+
+### **4. Display Third Highest Marks from Student Table**  
+#### **Using `LIMIT` with `OFFSET`**
+```sql
+SELECT Name, Score 
+FROM Students 
+ORDER BY Score DESC 
+LIMIT 1 OFFSET 2;
+```
+
+#### **Using `DENSE_RANK()`**
+```sql
+SELECT Name, Score 
+FROM (
+    SELECT Name, Score, DENSE_RANK() OVER (ORDER BY Score DESC) AS rnk
+    FROM Students
+) Ranked
+WHERE rnk = 3;
+```
+✅ **Handles duplicate scores correctly.**  
+
+---
+
+### **5. Primary Key vs. Foreign Key**
+| Feature | Primary Key | Foreign Key |
+|---------|------------|-------------|
+| **Definition** | Uniquely identifies a record in a table | Refers to a primary key in another table |
+| **Uniqueness** | Always unique | Can have duplicates |
+| **Nullability** | Cannot be NULL | Can be NULL |
+| **Example** | `Student_ID` in `Students` table | `Student_ID` in `Marks` table references `Students` |
+
+```sql
+CREATE TABLE Students (
+    Student_ID INT PRIMARY KEY,
+    Name VARCHAR(50)
+);
+
+CREATE TABLE Marks (
+    Student_ID INT,
+    Subject VARCHAR(50),
+    Marks INT,
+    FOREIGN KEY (Student_ID) REFERENCES Students(Student_ID)
+);
+```
+
+---
+
+### **6. SQL Joins (Optimization Using `JOIN` Instead of `WHERE`)**  
+#### **Example Tables**
+| Employee_ID | Name  | Dept_ID |
+|------------|------|--------|
+| 1          | Alice | 10     |
+| 2          | Bob  | 20     |
+
+| Dept_ID | Dept_Name |
+|--------|----------|
+| 10     | HR       |
+| 20     | IT       |
+
+#### **Incorrect: Using `WHERE` (Overhead Due to Cartesian Product)**
+```sql
+SELECT e.Name, d.Dept_Name 
+FROM Employees e, Departments d 
+WHERE e.Dept_ID = d.Dept_ID;
+```
+🚨 **Issue:** Creates a Cartesian product before filtering.
+
+#### **Optimized: Using `INNER JOIN`**
+```sql
+SELECT e.Name, d.Dept_Name 
+FROM Employees e
+INNER JOIN Departments d ON e.Dept_ID = d.Dept_ID;
+```
+✅ **Better performance without unnecessary computations.**  
+
+---
+
+### **7. Normalization (Key Concept Summary)**  
+| Normal Form | Condition |
+|------------|-----------|
+| **1NF** | No repeating groups; Atomic values. |
+| **2NF** | No partial dependency (All non-key attributes depend on the whole primary key). |
+| **3NF** | No transitive dependency (Non-key attributes depend only on the primary key). |
+| **BCNF** | Every functional dependency’s left side must be a super key. |
+
+---
+
+### **Final Thoughts**
+- **Concurrency Control** ensures correct transaction handling.
+- **Normalization** optimizes database design and prevents anomalies.
+- **SQL Joins** improve query performance compared to `WHERE` filters.
+- **Rank Queries** (`LIMIT`, `OFFSET`, `DENSE_RANK()`) help in fetching top scores.
+
+Let me know if you need further refinements! 🚀
