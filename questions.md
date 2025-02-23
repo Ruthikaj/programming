@@ -1,3 +1,6 @@
+https://masukmia.medium.com/200-frequently-asked-c-programing-interview-questions-answers-2c8399e74b68
+
+
 Q1. What is C programming language?
 
 Answer: C is a general-purpose programming language that was developed by Dennis Ritchie at Bell Labs in 1972. It is widely used for system programming, developing operating systems, and embedded systems due to its close association with hardware.
