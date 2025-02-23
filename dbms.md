@@ -560,3 +560,171 @@ LEFT JOIN Employees e2 ON e1.manager_id = e2.emp_id;
 💡 **SELF JOIN** → A table joins itself  
 
 
+### **📌 SQL vs NoSQL Databases**  
+| Feature        | SQL (Relational) | NoSQL (Non-Relational) |
+|---------------|-----------------|------------------------|
+| **Structure** | Table-based (Rows & Columns) | Key-Value, Document, Column, Graph-based |
+| **Schema** | Fixed, predefined schema | Flexible, dynamic schema |
+| **Scalability** | Vertical (Scaling up) | Horizontal (Scaling out) |
+| **Transactions** | ACID-compliant | BASE (Basically Available, Soft state, Eventually consistent) |
+| **Best For** | Structured data, complex queries | Large-scale, high-speed, unstructured data |
+| **Examples** | MySQL, PostgreSQL, SQL Server | MongoDB, Cassandra, Redis, Firebase |
+
+### **📌 Which Database for Transactions?**
+**For transactions**, SQL databases are the **preferred choice** because they ensure **data consistency, integrity, and reliability** through **ACID properties** (Atomicity, Consistency, Isolation, Durability).  
+
+🔹 **Example:** Banking applications, financial systems, and inventory management require strict transactions where data must remain **consistent at all times**.  
+
+✅ **Why SQL for transactions?**
+- Supports **multi-step transactions** (e.g., transferring money between accounts).
+- Ensures **data integrity** with foreign keys and constraints.
+- Maintains **reliability** even during failures (rollback, recovery).
+
+---
+
+### **📌 ACID Principles in Databases**  
+ACID ensures **reliable transactions** in SQL databases.
+
+| ACID Property | Explanation | Example in Project |
+|--------------|------------|--------------------|
+| **Atomicity** (All or Nothing) | Ensures that a transaction is either fully completed or fully rolled back. | In an **e-commerce** app, if a payment fails, the order is not placed. |
+| **Consistency** (Valid State) | Ensures that database remains in a valid state before and after transactions. | In a **banking app**, balance updates must follow rules (no overdraft). |
+| **Isolation** (Concurrent Transactions) | Prevents **race conditions**, ensuring transactions do not interfere with each other. | Two users booking the **last available ticket** won’t cause double booking. |
+| **Durability** (Permanent Storage) | Once committed, a transaction remains **even after power failure or crash**. | Order history in an **e-commerce app** remains even after a server restart. |
+
+---
+
+### **📌 Applying ACID to My Project**
+🚀 **Project: Online Payment System**
+1️⃣ **Atomicity** – If money is debited from **User A**, it must be credited to **User B**, or both steps rollback.  
+2️⃣ **Consistency** – Database rules ensure a **negative balance is never allowed**.  
+3️⃣ **Isolation** – Two users **cannot modify the same account balance** at the same time.  
+4️⃣ **Durability** – Transaction logs ensure **data is recoverable** even after a crash.  
+
+✅ **SQL (PostgreSQL/MySQL) is the best choice for transactional systems due to ACID compliance.**
+
+### **📌 Meaning of Consistency in ACID**  
+
+**Consistency** in ACID (Atomicity, Consistency, Isolation, Durability) ensures that **the database remains in a valid state before and after a transaction**. This means:  
+
+1. **Every transaction must take the database from one valid state to another.**  
+2. **No transaction should leave the database in an inconsistent state.**  
+3. **All integrity constraints (like foreign keys, unique constraints, and business rules) must be maintained.**  
+
+---
+
+### **📌 Example of Consistency in a Banking System**  
+#### Scenario: Transferring ₹1000 from Account A to Account B  
+
+- Before transaction:  
+  - Account A balance = ₹5000  
+  - Account B balance = ₹3000  
+
+- Transaction Process:  
+  1. Deduct ₹1000 from Account A  
+  2. Add ₹1000 to Account B  
+
+- If the transaction succeeds:  
+  - **Account A = ₹4000**  
+  - **Account B = ₹4000**  
+  - ✅ Database remains **consistent**  
+
+- If the transaction **fails halfway** (e.g., deducted from A but not added to B), **the system must rollback** to maintain consistency.  
+
+---
+
+### **📌 How Consistency Works in Databases?**  
+✔ **Foreign Key Constraints** – Prevents orphan records.  
+✔ **Unique Constraints** – Ensures no duplicate data (e.g., unique email IDs).  
+✔ **Check Constraints** – Enforces rules (e.g., balance cannot be negative).  
+
+---
+
+### **📌 Key Takeaway**  
+**Consistency ensures that database rules and constraints are always met, preventing corruption or invalid states.** 🚀
+
+### **📌 Meaning of Isolation in ACID**  
+
+**Isolation** ensures that **multiple transactions can execute concurrently without interfering with each other**, preventing **race conditions** and **dirty reads**.  
+
+📌 **Key Idea:** Each transaction **must be executed as if it’s the only one running**, even if multiple transactions are happening simultaneously.
+
+---
+
+### **📌 Example of Isolation in a Banking System**  
+#### Scenario: Two Users Withdrawing Money from the Same Account  
+
+1️⃣ **Account Balance: ₹5000**  
+2️⃣ **User A withdraws ₹2000**, and **User B withdraws ₹4000** at the same time.  
+3️⃣ If transactions are not properly **isolated**, both might read the old balance and withdraw, leading to an **incorrect final balance**.  
+
+💡 **Without Isolation:**  
+- Both A & B see ₹5000 balance  
+- A withdraws ₹2000 → balance should be ₹3000  
+- B withdraws ₹4000 → balance should be **-₹1000** ❌ (Incorrect!)  
+
+✅ **With Isolation:**  
+- A's transaction **locks** the account → B has to wait.  
+- A's transaction completes (new balance ₹3000).  
+- B’s transaction starts, sees the correct balance, and only withdraws if valid.  
+
+---
+
+### **📌 Isolation Levels in SQL**  
+
+| Isolation Level | Prevents Dirty Reads? | Prevents Non-Repeatable Reads? | Prevents Phantom Reads? | Use Case |
+|----------------|-----------------------|------------------------------|------------------------|----------|
+| **Read Uncommitted** | ❌ No | ❌ No | ❌ No | Fast but unsafe (e.g., logging) |
+| **Read Committed** | ✅ Yes | ❌ No | ❌ No | General-purpose transactions |
+| **Repeatable Read** | ✅ Yes | ✅ Yes | ❌ No | Banking, inventory management |
+| **Serializable** | ✅ Yes | ✅ Yes | ✅ Yes | Highest safety, used in financial apps |
+
+---
+
+### **📌 Why Isolation is Important?**  
+1. **Prevents Dirty Reads** – Ensures transactions **don’t read uncommitted data**.  
+2. **Prevents Non-Repeatable Reads** – Ensures **data remains stable** during a transaction.  
+3. **Prevents Phantom Reads** – Ensures **new records aren’t added** while reading a dataset.  
+
+✅ **Isolation guarantees that transactions do not interfere with each other, ensuring database accuracy in multi-user environments.** 🚀
+
+### **📌 Meaning of Durability in ACID**  
+
+**Durability** ensures that once a transaction is **successfully committed**, its changes are permanently saved in the database—even in the case of system crashes, power failures, or hardware failures.  
+
+📌 **Key Idea:** **Committed data must never be lost!**  
+
+---
+
+### **📌 Example of Durability in a Banking System**  
+#### Scenario: Money Transfer  
+
+1️⃣ **User transfers ₹5000 from Account A to Account B**.  
+2️⃣ The database **updates balances** and **commits the transaction**.  
+3️⃣ **Power failure occurs right after the commit**.  
+4️⃣ When the system restarts, the **transaction must still be recorded** (₹5000 should not disappear!).  
+
+✅ **With Durability:**  
+- The database uses **logs, backups, and transaction journals** to ensure the data is saved permanently.  
+- After a crash, the system **recovers the committed transaction** and maintains data integrity.  
+
+❌ **Without Durability:**  
+- A crash might **erase committed data**, leading to **inconsistent financial records**.  
+
+---
+
+### **📌 How Durability is Achieved in Databases?**  
+
+✔ **Write-Ahead Logging (WAL)** – Changes are first written to a log before updating the database.  
+✔ **Commit Logs & Checkpoints** – Ensure the latest committed state is saved.  
+✔ **RAID & Replication** – Data is stored in multiple locations for reliability.  
+✔ **Crash Recovery Mechanisms** – On restart, the system **replays logs** to restore transactions.  
+
+---
+
+### **📌 Why Durability is Important?**  
+✅ Ensures **data is never lost** after a successful transaction.  
+✅ Protects against **system crashes, power failures, and unexpected shutdowns**.  
+✅ Essential for **banking, e-commerce, and financial applications** where **data loss is unacceptable**.  
+
+🚀 **Durability guarantees that committed transactions remain permanent, ensuring database reliability and trust.**
