@@ -211,3 +211,137 @@ To speed up fetching recent photos, add an **index** on `uploaded_at`:
 ```sql
 CREATE INDEX idx_uploaded_at ON Photos(uploaded_at DESC);
 ```
+
+### **1. What is SQL?**  
+SQL (**Structured Query Language**) is used to manage and manipulate relational databases by performing operations like **insertion, retrieval, updating, and deletion** of data.
+
+---
+
+### **2. Types of Joins in SQL**  
+Joins in SQL are used to combine rows from **two or more tables** based on a related column.
+
+#### **Types of Joins:**
+- **INNER JOIN** → Returns matching rows from both tables.  
+- **LEFT JOIN** → Returns all rows from the left table and matching rows from the right.  
+- **RIGHT JOIN** → Returns all rows from the right table and matching rows from the left.  
+- **FULL JOIN** → Returns all rows from both tables, filling NULL where no match is found.  
+- **CROSS JOIN** → Produces the Cartesian product of two tables.  
+- **SELF JOIN** → A table joins itself.
+
+#### **Example of INNER JOIN:**
+```sql
+SELECT Employees.name, Departments.dept_name 
+FROM Employees
+INNER JOIN Departments ON Employees.dept_id = Departments.dept_id;
+```
+
+---
+
+### **3. What is the Use of Self-Join in SQL?**  
+A **SELF JOIN** is used to compare rows within the same table. It treats the table as two separate tables.
+
+#### **Example: Finding Employee-Manager Relationship**
+```sql
+SELECT e1.name AS Employee, e2.name AS Manager
+FROM Employees e1
+JOIN Employees e2 ON e1.manager_id = e2.emp_id;
+```
+🔹 Here, the **Employees** table is joined with itself to get the manager's name.
+
+---
+
+### **4. Designing an Optimal Database for Searching with Non-Primary Attributes**  
+To efficiently search on **non-primary attributes**, we can use **Indexing** and **Full-Text Search**.
+
+#### **Example Schema:**
+```sql
+CREATE TABLE Users (
+    user_id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    phone VARCHAR(15),
+    address TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+#### **Optimizations for Fast Searches:**
+1. **Indexing on frequently searched columns:**
+```sql
+CREATE INDEX idx_name ON Users(name);
+CREATE INDEX idx_email ON Users(email);
+```
+2. **Full-Text Search (for large text data):**
+```sql
+ALTER TABLE Users ADD FULLTEXT(name, address);
+```
+3. **Using Wildcards for Partial Matching:**
+```sql
+SELECT * FROM Users WHERE name LIKE 'John%';
+```
+4. **Denormalization (if needed for performance):**
+- Storing derived values (e.g., `name_hash`) to speed up lookups.
+
+---
+
+### **5. What is Indexing in the Database?**  
+**Indexing** improves the speed of data retrieval in large databases by creating a data structure for quick lookups.
+
+#### **Example of Indexing:**
+```sql
+CREATE INDEX idx_email ON Users(email);
+```
+🔹 Now, searching for a user by email will be **faster**.
+
+#### **Types of Indexes:**
+- **Clustered Index** → Sorts the data based on key values (only one per table).  
+- **Non-Clustered Index** → Stores pointers to data locations.  
+- **Unique Index** → Ensures column values are unique.  
+- **Full-Text Index** → Speeds up searches in large text fields.  
+
+---
+
+### **6. What are SQL Triggers?**  
+A **Trigger** is an automatic action that runs **before or after** an event (INSERT, UPDATE, DELETE).
+
+#### **Example: Trigger on INSERT**
+```sql
+CREATE TRIGGER before_insert_user
+BEFORE INSERT ON Users
+FOR EACH ROW
+SET NEW.created_at = NOW();
+```
+🔹 This ensures `created_at` is automatically set to the current timestamp before inserting a new user.
+
+---
+
+### **7. What are SQL Views?**  
+A **View** is a virtual table based on an SQL query.
+
+#### **Use Cases of Views:**
+- Hides complexity of queries  
+- Ensures security by restricting access to certain columns  
+- Helps in data abstraction  
+
+#### **Example: Creating a View for Active Users**
+```sql
+CREATE VIEW ActiveUsers AS
+SELECT user_id, name, email FROM Users WHERE status = 'active';
+```
+
+#### **Querying the View:**
+```sql
+SELECT * FROM ActiveUsers;
+```
+🔹 Acts like a **virtual table** without storing actual data.
+
+---
+
+### **Summary:**  
+✅ **SQL** is used for managing databases  
+✅ **Joins** help combine tables; **Self-Join** is used for intra-table relations  
+✅ **Indexes** optimize queries on non-primary attributes  
+✅ **Triggers** automate actions in a database  
+✅ **Views** act as virtual tables for security and ease of access  
+
+
